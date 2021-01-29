@@ -7,8 +7,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -142,5 +144,54 @@ public class AlphaController {
 
         return list;
     }
+
+    //cookie示例   cookie只能存储字符串  因为他给频繁的传输
+    @RequestMapping(path = "/cookie/set", method = RequestMethod.GET)
+    @ResponseBody
+    public String setCookie(HttpServletResponse response) {
+        //创建cookie对象
+        Cookie cookie = new Cookie("code", "100");
+        //设置cookie的生效的范围
+        cookie.setPath("/community/alpha");
+        //cookie的生效时间 (默认是一旦关闭浏览器就失效,但是我们可以设置更长的时间)
+        cookie.setMaxAge(60*10);
+        //发送cookie
+        response.addCookie(cookie);
+        return "set cookie";
+    }
+
+    //证明cookie的有效
+    @RequestMapping(path = "/cookie/get", method = RequestMethod.GET)
+    @ResponseBody
+    public String getCookie(@CookieValue("code") String cookieValue){
+        //@CookieValue 通过cookie的key获取cookie的值
+        System.out.println(cookieValue);
+        return "get cookie";
+    }
+
+    //Session示例  session 他可以存储对象类型的
+    @RequestMapping(path = "/session/set",method = RequestMethod.GET)
+    @ResponseBody
+    public String setSession(HttpSession session){
+        //我们不用手动的创建session 服务器会自动的创建 我们只需要声明就好了
+        session.setAttribute("id",1);
+        session.setAttribute("name","Test");
+        return "set session";
+
+    }
+    //获取Session
+    @RequestMapping(path = "/session/get",method = RequestMethod.GET)
+    @ResponseBody
+    public String getSession(HttpSession session) {
+
+        Object id = session.getAttribute("id");
+        Object name = session.getAttribute("name");
+        System.out.println(id);
+        System.out.println(name);
+        return "get session";
+
+    }
+
+
 
 }
