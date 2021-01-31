@@ -1,6 +1,7 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.service.AlphaService;
+import com.nowcoder.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -154,7 +155,7 @@ public class AlphaController {
         //设置cookie的生效的范围
         cookie.setPath("/community/alpha");
         //cookie的生效时间 (默认是一旦关闭浏览器就失效,但是我们可以设置更长的时间)
-        cookie.setMaxAge(60*10);
+        cookie.setMaxAge(60 * 10);
         //发送cookie
         response.addCookie(cookie);
         return "set cookie";
@@ -163,24 +164,25 @@ public class AlphaController {
     //证明cookie的有效
     @RequestMapping(path = "/cookie/get", method = RequestMethod.GET)
     @ResponseBody
-    public String getCookie(@CookieValue("code") String cookieValue){
+    public String getCookie(@CookieValue("code") String cookieValue) {
         //@CookieValue 通过cookie的key获取cookie的值
         System.out.println(cookieValue);
         return "get cookie";
     }
 
     //Session示例  session 他可以存储对象类型的
-    @RequestMapping(path = "/session/set",method = RequestMethod.GET)
+    @RequestMapping(path = "/session/set", method = RequestMethod.GET)
     @ResponseBody
-    public String setSession(HttpSession session){
+    public String setSession(HttpSession session) {
         //我们不用手动的创建session 服务器会自动的创建 我们只需要声明就好了
-        session.setAttribute("id",1);
-        session.setAttribute("name","Test");
+        session.setAttribute("id", 1);
+        session.setAttribute("name", "Test");
         return "set session";
 
     }
+
     //获取Session
-    @RequestMapping(path = "/session/get",method = RequestMethod.GET)
+    @RequestMapping(path = "/session/get", method = RequestMethod.GET)
     @ResponseBody
     public String getSession(HttpSession session) {
 
@@ -192,6 +194,14 @@ public class AlphaController {
 
     }
 
+    //ajax示例
+    @RequestMapping(path = "/ajax", method = RequestMethod.POST)
+    @ResponseBody //返回字符串
+    public String testAjax(String name, int age) {
+        System.out.println(name);
+        System.out.println(age);
+        return CommunityUtil.getJSONString(0,"操作成功!");
+    }
 
 
 }
