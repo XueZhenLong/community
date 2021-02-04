@@ -8,7 +8,10 @@ package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.service.FollowService;
+import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import com.nowcoder.community.util.MailClient;
@@ -41,7 +44,7 @@ import java.io.IOException;
  */
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -63,6 +66,12 @@ public class UserController {
     //注入HostHolder 获得当前用户
     @Autowired
     private HostHolder hostHolder;
+    //注入点赞功能
+    @Autowired
+    private LikeService likeService;
+    //注入关注功能
+    @Autowired
+    private FollowService followService;
 
     //跳转设置页面请求路径
     @LoginRequired
@@ -136,6 +145,7 @@ public class UserController {
         }
     }
 
+    //修改密码
     @RequestMapping(path = "/change",method = RequestMethod.POST)
     public String changePassword(Model model,@RequestParam("old_password")String old_password,@RequestParam("new_password")String new_password,@RequestParam("confirm_password")String confirm_password){
 
@@ -160,7 +170,39 @@ public class UserController {
                 model.addAttribute("changeMsg_1","原来的密码输入错啦!");
                 return "/site/setting";
             }
-
         }
     }
+
+    //个人主页
+    @RequestMapping(path = "/profile/{userId}",method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId,Model model){
+        //首先我们把要访问的用户查询出来
+        User user = userService.findUserById(userId);
+        //判断一下 如果不存在的话,抛异常
+        if (user==null){
+            throw new RuntimeException("该用户不存在!");
+        }
+        //把用户的信息传给前端.
+        model.addAttribute("user",user);
+        //用户点赞的数量,并传递给前端
+        int userLikeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",userLikeCount);
+
+        //用户关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+        //粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount",followerCount);
+        //是否关注
+        boolean hasFollowed = false;
+        //判断用户是否登录
+        if (hostHolder.getUser()!= null){
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(),userId,ENTITY_TYPE_USER);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
+        return "/site/profile";
+    }
+
+
 }
