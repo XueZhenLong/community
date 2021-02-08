@@ -6,10 +6,8 @@
  */
 package com.nowcoder.community.controller;
 
-import com.nowcoder.community.entity.Comment;
-import com.nowcoder.community.entity.DiscussPost;
-import com.nowcoder.community.entity.Page;
-import com.nowcoder.community.entity.User;
+import com.nowcoder.community.entity.*;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
@@ -59,6 +57,16 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private LikeService likeService;
 
+    //用来触发事件
+    @Autowired
+    private EventProducer eventProducer;
+
+    /**
+     * 发布帖子
+     * @param title
+     * @param content
+     * @return
+     */
     //对于帖子的增加操作
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
@@ -77,10 +85,34 @@ public class DiscussPostController implements CommunityConstant {
         post.setCreateTime(new Date());
 
         discussPostService.addDiscussPost(post);
+
+        //帖子发布成功后,将新发布的帖子 加入到Elasticsearch服务器中
+        //---------------------------------------------------------------
+        //触发发帖事件
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(post.getId());
+        //触发事件
+        eventProducer.fireEvent(event);
+
+
+        //---------------------------------------------------------------
+
+
         //报错的情况,将来统一处理.
         return CommunityUtil.getJSONString(0, "发布成功!");
     }
 
+
+    /**
+     * 帖子的详情页面
+     * @param discussPostId
+     * @param model
+     * @param page
+     * @return
+     */
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)
     public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page) {
         //查询帖子

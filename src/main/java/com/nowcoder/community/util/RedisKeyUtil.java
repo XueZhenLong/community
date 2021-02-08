@@ -22,6 +22,12 @@ public class RedisKeyUtil {
     //粉丝->follower 目标->followee 举例 A是B的粉丝,A的目标是B
     private static final String PREFIX_FOLLOWEE = "followee";
     private static final String PREFIX_FOLLOWER = "follower";
+    //优化项目验证码功能
+    private static final String PREFIX_KAPTCHA = "kaptcha";
+    //优化项目的登录凭证
+    private static final String PREFIX_TICKET = "ticket";
+    //优化查询用户信息
+    private static final String PREFIX_USER = "user";
 
     //某个实体的赞
     //like:entity:entityType:entityId ->set(userId)
@@ -46,6 +52,21 @@ public class RedisKeyUtil {
     //follower:entityType:entityId ->zset(userId,now)
     public static String getFollowerKey(int entityType, int entityId){
         return PREFIX_FOLLOWER + SPLIT + entityType + SPLIT + entityId;
+    }
+
+    //登录验证码
+    public static String getKaptchaKey(String owner){
+        return PREFIX_KAPTCHA + SPLIT + owner;
+    }
+
+    //登录的凭证
+    public static String getTicketKey(String ticket){
+        return PREFIX_TICKET + SPLIT + ticket;
+    }
+
+    //用户信息
+    public static String getUserKey(int userId){
+        return PREFIX_TICKET + SPLIT + userId;
     }
 
 

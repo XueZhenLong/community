@@ -18,6 +18,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @since 1.0.0
  */
 @Mapper
+@Deprecated //表示 这个不推荐使用了.
 public interface LoginTicketMapper{
 
 

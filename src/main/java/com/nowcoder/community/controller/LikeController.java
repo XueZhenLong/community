@@ -6,8 +6,13 @@
  */
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.entity.Comment;
+import com.nowcoder.community.entity.DiscussPost;
+import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.LikeService;
+import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +32,7 @@ import java.util.Map;
  * @since 1.0.0
  */
 @Controller
-public class LikeController {
+public class LikeController implements CommunityConstant {
 
     @Autowired
     private LikeService likeService;
@@ -35,9 +40,13 @@ public class LikeController {
     @Autowired
     private HostHolder hostHolder;
 
+    //注入kafka消息的生产者
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/like",method = RequestMethod.POST)
     @ResponseBody
-    public String like(int entityType, int entityId, int entityUserId){
+    public String like(int entityType, int entityId, int entityUserId,int postId){
         //先获取当前用户
         User user = hostHolder.getUser();
         //点赞
@@ -50,6 +59,23 @@ public class LikeController {
         Map<String,Object> map = new HashMap<>();
         map.put("likeCount",likeCount);
         map.put("likeStatus",LikeStatus);
+
+        //---------------------------------------------
+        //点赞评论之后,开始kafka通知的行为
+        //触发点赞事件 (点赞的时候我们才通知用户)
+        if (LikeStatus == 1){
+            Event event = new Event()
+                    .setTopic(TOPIC_LIKE)
+                    .setUserId(hostHolder.getUser().getId())
+                    .setEntityType(entityType)
+                    .setEntityId(entityId)
+                    .setEntityUserId(entityUserId)
+                    .setData("postId",postId);
+            //让生产者开始产生事件
+            eventProducer.fireEvent(event);
+        }
+        //---------------------------------------------
+
         //把封装好的数据使用JSon格式返回
         return CommunityUtil.getJSONString(0,null,map);
     }
