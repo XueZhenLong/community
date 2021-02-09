@@ -205,5 +205,74 @@ public class DiscussPostController implements CommunityConstant {
 
     }
 
+    /**
+     * 实现帖子的置顶
+     * 由于是异步请求,我们需要实时的刷新页面,使用@ResponseBody
+     * @param id
+     * @return
+     */
+    @RequestMapping(path = "/top" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String setTop(int id){
+        discussPostService.updateType(id,1);
+        //在Elasticsearch中更新,帖子最新的数据 (重新触发发帖事件)
+
+        //触发发帖事件
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityId(id)
+                .setEntityType(ENTITY_TYPE_POST);
+        eventProducer.fireEvent(event);
+
+        return CommunityUtil.getJSONString(0);
+    }
+
+    /**
+     * 实现帖子的加精
+     * 由于是异步请求,我们需要实时的刷新页面,使用@ResponseBody
+     * @param id
+     * @return
+     */
+    @RequestMapping(path = "/wonderful" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String setWonderful(int id){
+        discussPostService.updateStatus(id,1);
+        //在Elasticsearch中更新,帖子最新的数据 (重新触发发帖事件)
+
+        //触发发帖事件
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityId(id)
+                .setEntityType(ENTITY_TYPE_POST);
+        eventProducer.fireEvent(event);
+
+        return CommunityUtil.getJSONString(0);
+    }
+
+
+    /**
+     * 实现帖子的删除
+     * 由于是异步请求,我们需要实时的刷新页面,使用@ResponseBody
+     * @param id
+     * @return
+     */
+    @RequestMapping(path = "/delete" ,method = RequestMethod.POST)
+    @ResponseBody
+    public String setDelete(int id){
+        discussPostService.updateStatus(id,2);
+        //在Elasticsearch中更新,帖子最新的数据 (重新触发发帖事件)
+
+        //触发删帖事件
+        Event event = new Event()
+                .setTopic(TOPIC_DELETE)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityId(id)
+                .setEntityType(ENTITY_TYPE_POST);
+        eventProducer.fireEvent(event);
+
+        return CommunityUtil.getJSONString(0);
+    }
 
 }

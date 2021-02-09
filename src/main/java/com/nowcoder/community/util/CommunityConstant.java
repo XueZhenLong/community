@@ -74,5 +74,30 @@ public interface CommunityConstant {
      */
     String TOPIC_PUBLISH = "publish";
 
+    /**
+     * 主题:删帖
+     */
+    String TOPIC_DELETE = "delete";
+
+    /**
+     * 用于spring security的权限常量
+     * 权限:普通用户
+     */
+    String AUTHORITY_USER = "user";
+
+
+    /**
+     * 用于spring security的权限常量
+     * 权限:管理员
+     */
+    String AUTHORITY_ADMIN = "admin";
+
+
+    /**
+     * 用于spring security的权限常量
+     * 权限:版主
+     */
+    String AUTHORITY_MODERATOR = "moderator";
+
 
 }

@@ -1,5 +1,6 @@
 package com.nowcoder.community.service;
 
+import com.jhlabs.image.DissolveFilter;
 import com.nowcoder.community.dao.DiscussPostMapper;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.util.SensitiveFilter;
@@ -51,6 +52,16 @@ public class DiscussPostService {
 
     public int updateCommentCount(int id, int commentCount){
         return discussPostMapper.updateCommentCount(id,commentCount);
+    }
+
+    //修改帖子的类型
+    public int updateType(int id, int type){
+        return discussPostMapper.updateType(id,type);
+    }
+
+    //修改帖子的状态
+    public int updateStatus(int id, int status){
+        return discussPostMapper.updateStatus(id,status);
     }
 
 }
