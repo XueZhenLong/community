@@ -32,6 +32,8 @@ public class RedisKeyUtil {
     private static final String PREFIX_UV = "uv";
     //统计网站日活跃人数
     private static final String PREFIX_DAU = "dau";
+    //统计帖子信息变化
+    private static final String PREFIX_POST = "post";
 
     //某个实体的赞
     //like:entity:entityType:entityId ->set(userId)
@@ -92,6 +94,11 @@ public class RedisKeyUtil {
     //区间活跃用户 从xx-xxx之间的DAU
     public static String getDAUKey(String startDate, String endDate) {
         return PREFIX_DAU + SPLIT + startDate + SPLIT + endDate;
+    }
+
+    //返回统计帖子分数的Key
+    public static String getPostScoreKey(){
+        return  PREFIX_POST + SPLIT + "score";
     }
 
 

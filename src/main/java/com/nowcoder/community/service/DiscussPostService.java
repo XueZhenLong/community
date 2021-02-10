@@ -21,8 +21,8 @@ public class DiscussPostService {
     private SensitiveFilter sensitiveFilter;
 
     //根据用户的用户的id,在数据库中查询用户的文章
-    public List<DiscussPost> findDiscussPosts(int userId, int offset, int limit) {
-        return discussPostMapper.selectDiscussPosts(userId, offset, limit);
+    public List<DiscussPost> findDiscussPosts(int userId, int offset, int limit, int orderMode) {
+        return discussPostMapper.selectDiscussPosts(userId, offset, limit,orderMode);
     }
 
     //根据用户的id,在数据库中查询,用户的文章数量
@@ -64,4 +64,7 @@ public class DiscussPostService {
         return discussPostMapper.updateStatus(id,status);
     }
 
+    public int updateScore(int postId, double score) {
+        return discussPostMapper.updateScore(postId,score);
+    }
 }

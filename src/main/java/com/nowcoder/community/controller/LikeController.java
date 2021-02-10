@@ -15,7 +15,9 @@ import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
+import com.nowcoder.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -43,6 +45,10 @@ public class LikeController implements CommunityConstant {
     //注入kafka消息的生产者
     @Autowired
     private EventProducer eventProducer;
+
+    //注入RedisTemplate,用于热帖排行,把帖子的id存储到redis中
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @RequestMapping(path = "/like",method = RequestMethod.POST)
     @ResponseBody
@@ -75,6 +81,14 @@ public class LikeController implements CommunityConstant {
             eventProducer.fireEvent(event);
         }
         //---------------------------------------------
+
+        if (entityType == ENTITY_TYPE_POST){
+            //---------------------------------------------------------------
+            //用于热帖排序,我们发布的时候计算帖子的分数
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            //我们需要去重,有序 所以采用Set结构进行存储
+            redisTemplate.opsForSet().add(redisKey,postId);
+        }
 
         //把封装好的数据使用JSon格式返回
         return CommunityUtil.getJSONString(0,null,map);

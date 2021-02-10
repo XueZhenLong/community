@@ -14,8 +14,10 @@ import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.HostHolder;
+import com.nowcoder.community.util.RedisKeyUtil;
 import org.apache.catalina.Host;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +50,10 @@ public class CommentController implements CommunityConstant {
     //注入帖子的Service, 用于查询帖子id
     @Autowired
     private DiscussPostService discussPostService;
+
+    //注入RedisTemplate,用于热帖排行,把帖子的id存储到redis中
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 添加对于帖子,评论 的评论
@@ -97,6 +103,12 @@ public class CommentController implements CommunityConstant {
                     .setEntityId(discussPostId);
             //触发事件
             eventProducer.fireEvent(event);
+
+            //---------------------------------------------------------------
+            //用于热帖排序,我们发布的时候计算帖子的分数
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            //我们需要去重,有序 所以采用Set结构进行存储
+            redisTemplate.opsForSet().add(redisKey,discussPostId);
         }
         //---------------------------------------------------------------
 

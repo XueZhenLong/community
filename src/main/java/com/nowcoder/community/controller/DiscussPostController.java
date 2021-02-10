@@ -15,9 +15,11 @@ import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
+import com.nowcoder.community.util.RedisKeyUtil;
 import jdk.nashorn.internal.codegen.CompileUnit;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,6 +63,10 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    //注入RedisTemplate,用于热帖排行,把帖子的id存储到redis中
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     /**
      * 发布帖子
      * @param title
@@ -98,6 +104,11 @@ public class DiscussPostController implements CommunityConstant {
         eventProducer.fireEvent(event);
 
 
+        //---------------------------------------------------------------
+        //用于热帖排序,我们发布的时候计算帖子的分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        //我们需要去重,有序 所以采用Set结构进行存储
+        redisTemplate.opsForSet().add(redisKey,post.getId());
         //---------------------------------------------------------------
 
 
@@ -247,6 +258,12 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityId(id)
                 .setEntityType(ENTITY_TYPE_POST);
         eventProducer.fireEvent(event);
+
+        //---------------------------------------------------------------
+        //用于热帖排序,我们发布的时候计算帖子的分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        //我们需要去重,有序 所以采用Set结构进行存储
+        redisTemplate.opsForSet().add(redisKey,id);
 
         return CommunityUtil.getJSONString(0);
     }
