@@ -80,6 +80,11 @@ public interface CommunityConstant {
     String TOPIC_DELETE = "delete";
 
     /**
+     * 主题:分享
+     */
+    String TOPIC_SHARE = "share";
+
+    /**
      * 用于spring security的权限常量
      * 权限:普通用户
      */
